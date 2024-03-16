@@ -15,7 +15,6 @@ async function getData() {
           body: JSON.stringify(data),
         }
       );
-      console.log(response.body);
       return await response.json();
     } catch (error) {
       console.error(error);
@@ -43,7 +42,6 @@ async function getData() {
 
   async function init() {
     let { access_token } = await getAccessToken();
-    console.log("Access token:", access_token);
     async function makeApiRequest() {
       // Reuse the access_token in subsequent API requests
       const queryParams = {
@@ -95,7 +93,6 @@ leads = leads.slice(1).sort((a: string[], b: string[]) => {
 let sales = await getData();
 let clientsEmail = sales.items.map((client: { buyer: { email: string; }; }) => client.buyer.email);
 
-console.log(clientsEmail);
 const app = new Elysia()
 .use(cron({name: "get-leads", pattern: "0 */5 * * * *", async run() {
     leadsSheet = await fetch(
@@ -117,15 +114,15 @@ const app = new Elysia()
 }))
 
 
-.get('/leads', async ({params, query})=>{
-  let leadCount = leads.length;
-  let page = query.page ? parseInt(query.page) : 1;
-  let pageSize = query.pageSize ? parseInt(query.pageSize) : 10;
-  console.log(page, pageSize)
-  return Response.json(leads.slice((page-1)*pageSize, page*pageSize), );
+// .get('/leads', async ({params, query})=>{
+//   let leadCount = leads.length;
+//   let page = query.page ? parseInt(query.page) : 1;
+//   let pageSize = query.pageSize ? parseInt(query.pageSize) : 10;
+//   console.log(page, pageSize)
+//   return Response.json(leads.slice((page-1)*pageSize, page*pageSize), );
   
   
-})
+// })
 .use(html()).get('/leads-html', ({query}) =>{
   let leadCount = leads.length;
   let page = query.page ? parseInt(query.page) : 1;
@@ -198,7 +195,7 @@ const app = new Elysia()
             </div>
           );
         })}
-      <button hx-get={`/leads-html?page=${page+1}`} hx-swap="outerHTML" >
+      <button hx-get={`/leads-html?page=${page+1}`} hx-swap="outerHTML" hx-trigger="revealed" >
         {" "}
         Mais Leads
       </button>
@@ -209,7 +206,7 @@ const app = new Elysia()
 )
 } 
 )
-.get("/", () => (  <html lang='en'>
+.get("/leads", () => (  <html lang='en'>
 <head>
 <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -218,7 +215,7 @@ const app = new Elysia()
 <body className="bg-slate-800 text-zinc-200">
 <div className="flex flex-col items-center">
 <h1 className="text-2xl font-bold mb-4">Leads</h1>
-      <button hx-get="/leads-html" hx-swap="outerHTML">
+      <button hx-get="/leads-html" hx-trigger="load" hx-swap="outerHTML">
         {" "}
         Get More Leads
       </button>

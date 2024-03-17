@@ -8,10 +8,12 @@
   "dependencies": {
     "@elysiajs/cron": "^0.8.0",
     "@elysiajs/html": "^0.8.0",
+    "@elysiajs/static": "^0.8.1",
     "elysia": "latest"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "tailwindcss": "^3.4.1"
   },
   "module": "src/index.js"
 }

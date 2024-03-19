@@ -1,6 +1,10 @@
 import { Elysia } from "elysia";
 import { html } from "@elysiajs/html";
 import { cron } from "@elysiajs/cron";
+import { ctx } from "./context";
+
+import { BaseHtml } from "./components/base";
+
 import { staticPlugin } from "@elysiajs/static";
 
 //HOTMART
@@ -94,6 +98,7 @@ let clientsEmail = sales.items.map(
 );
 
 const app = new Elysia()
+  .use(ctx)
   .use(staticPlugin())
   .use(
     cron({
@@ -239,7 +244,12 @@ const app = new Elysia()
       <body class="bg-slate-800 text-zinc-200">
         <main class="flex min-h-screen flex-col items-center">
           <div class="flex flex-col items-center justify-center bg-blue py-2 sm:py-4">
+            <div class="flex item-center space-between gap-4">
             <h1 class="text-2xl font-bold mb-4">Leads</h1>
+
+            <h1 class="text-2xl font-bold mb-4">Sales</h1>
+
+            </div>
             <div class="grid grid-cols-1 gap-4 text-gray-700">
               <button
                 hx-get="/leads-html"
@@ -254,6 +264,11 @@ const app = new Elysia()
         </main>
       </body>
     </html>
+  ))
+  .get("/", () => (
+    <BaseHtml>
+      <h1>Test</h1>
+    </BaseHtml>
   ))
   .listen(3000);
 

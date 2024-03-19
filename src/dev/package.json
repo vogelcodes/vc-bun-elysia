@@ -1,0 +1,33 @@
+{
+  "name": "beth-stack",
+  "version": "0.0.34",
+  "type": "module",
+  "bin": "./dist/cli/index.js",
+  "exports": {
+    ".": "./src/index.ts",
+    "./jsx": "./src/jsx/index.ts",
+    "./jsx/register": "./src/jsx/register.ts",
+    "./cache": "./src/cache/index.ts",
+    "./elysia": "./src/elysia/index.ts",
+    "./dev": "./src/dev/index.ts",
+    "./turso": "./src/turso/index.ts"
+  },
+  "scripts": {
+    "typecheck": "bunx --bun tsc",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "build": "bun run ./src/cli/build.ts",
+    "clean": "rm -rf dist .turbo node_modules",
+    "lint": "eslint . --report-unused-disable-directives",
+    "lint:fix": "pnpm lint --fix",
+    "release": "changeset version"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "csstype": "^3.1.2",
+    "elysia": "0.7.0-beta.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

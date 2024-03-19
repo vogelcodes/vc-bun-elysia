@@ -347,7 +347,7 @@ const app = new Elysia()
     <BaseHtml>
       <main class="flex min-h-screen max-w-[980px] mx-auto flex-col items-center">
         <div class="flex flex-col w-full items-center justify-center py-2 sm:py-4">
-          <div class="flex item-center gap-10 space-between sticky top-0 w-full bg-slate-800">
+          <div class="flex item-center justify-center gap-10 space-between sticky top-0 w-full bg-slate-800">
             <h1
               hx-get="/leads-html"
               hx-target="#display"

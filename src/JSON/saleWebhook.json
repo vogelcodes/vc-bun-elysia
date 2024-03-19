@@ -1,0 +1,52 @@
+{
+  "data": {
+    "product": {
+      "has_co_production": true,
+      "name": "LactoFlow",
+      "id": 3062414,
+      "ucode": "e1439d32-44ba-427e-aaf5-5fc2a6d18e81"
+    },
+    "commissions": [
+      { "currency_value": "BRL", "source": "MARKETPLACE", "value": 30.4 },
+      { "currency_value": "BRL", "source": "PRODUCER", "value": 66.03 }
+    ],
+    "purchase": {
+      "original_offer_price": { "currency_value": "BRL", "value": 297 },
+      "subscription_anticipation_purchase": false,
+      "checkout_country": { "iso": "BR", "name": "Brasil" },
+      "order_bump": { "is_order_bump": false },
+      "approved_date": 1710766700000,
+      "offer": { "code": "w49bayjs" },
+      "order_date": 1710766695000,
+      "price": { "currency_value": "BRL", "value": 297 },
+      "payment": { "installments_number": 1, "type": "CREDIT_CARD" },
+      "full_price": { "currency_value": "BRL", "value": 297 },
+      "invoice_by": "HOTMART",
+      "transaction": "HP0226406338",
+      "status": "APPROVED"
+    },
+    "affiliates": [{ "affiliate_code": "", "name": "" }],
+    "producer": { "name": "Carolina Garrido Procaci" },
+    "buyer": {
+      "address": {
+        "zipcode": "31330642",
+        "country": "Brasil",
+        "address": "Rua Maria Fortunata Rotheia 95 ",
+        "city": "Belo Horizonte ",
+        "state": "MG",
+        "neighborhood": "Paquetá ",
+        "complement": "",
+        "country_iso": "BR"
+      },
+      "document": "11093636645",
+      "name": "Débora Coelho ",
+      "checkout_phone": "31994306650",
+      "email": "deboralsj@yahoo.com.br"
+    }
+  },
+  "hottok": "QWUGi30Zq3AtgmTPUXPhS59TRPsY4W5941326",
+  "id": "a3946412-1c00-4d53-a5d4-cd4a8616617c",
+  "creation_date": 1710833978211,
+  "event": "PURCHASE_APPROVED",
+  "version": "2.0.0"
+}

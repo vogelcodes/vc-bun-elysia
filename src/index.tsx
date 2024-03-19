@@ -6,6 +6,7 @@ import { ctx } from "./context";
 import { BaseHtml } from "./components/base";
 
 import { staticPlugin } from "@elysiajs/static";
+import { SalesHistoryItem } from "./hotmart";
 
 //HOTMART
 
@@ -66,6 +67,7 @@ async function getData() {
         },
       };
       let payments;
+      let buyerDetails;
       try {
         payments = await fetch(
           `https://developers.hotmart.com/payments/api/v1/sales/history?max_results=${queryParams.max_results}&transaction_status=APPROVED,COMPLETE&start_date=${queryParams.start_date}&end_date=${queryParams.end_date}`,
@@ -74,6 +76,15 @@ async function getData() {
       } catch (error) {
         console.error(error);
       }
+      // try {
+      //   buyerDetails = await fetch(
+      //     `https://developers.hotmart.com/payments/api/v1/sales/sales/281461825`,
+      //     apiConfig
+      //   );
+      // } catch (error) {
+      //   console.error(error);
+      // }
+      // console.log();
       return payments?.json();
     }
     const apiResponse = makeApiRequest();
@@ -92,7 +103,16 @@ let leads: string[][] = await leadsSheet.json();
 leads = leads.slice(1).sort((a: string[], b: string[]) => {
   return new Date(b[4]).getTime() - new Date(a[4]).getTime();
 });
-let sales = await getData();
+let sales: SalesHistoryItem = await getData();
+let sortedSales = sales.items.sort(
+  (
+    a: { purchase: { order_date: number } },
+    b: { purchase: { order_date: number } }
+  ) => {
+    return b.purchase.order_date - a.purchase.order_date;
+  }
+);
+
 let clientsEmail = sales.items.map(
   (client: { buyer: { email: string } }) => client.buyer.email
 );
@@ -122,6 +142,14 @@ const app = new Elysia()
       pattern: "0 */5 * * * *",
       async run() {
         sales = await getData();
+        sortedSales = sales.items.sort(
+          (
+            a: { purchase: { order_date: number } },
+            b: { purchase: { order_date: number } }
+          ) => {
+            return b.purchase.order_date - a.purchase.order_date;
+          }
+        );
         clientsEmail = sales.items.map(
           (client: { buyer: { email: string } }) => client.buyer.email
         );
@@ -142,7 +170,6 @@ const app = new Elysia()
     let leadCount = leads.length;
     let page = query.page ? parseInt(query.page) : 1;
     let pageSize = query.pageSize ? parseInt(query.pageSize) : 10;
-    console.log(page);
 
     return (
       <>
@@ -229,7 +256,59 @@ const app = new Elysia()
       </>
     );
   })
-  .get("/leads", () => (
+  .get("sales-html", ({ query }) => {
+    let saleCount = sales.items.length;
+    let page = query.page ? parseInt(query.page) : 1;
+    let pageSize = query.pageSize ? parseInt(query.pageSize) : 10;
+
+    return (
+      <>
+        {sales.items
+          .slice((page - 1) * pageSize, page * pageSize)
+          .map((sale, index: string | number | undefined) => {
+            let bgColor = "bg-white";
+            // if (clientsEmail.includes(sale.buyer.email.trim())) {
+            //   bgColor = "bg-green-300";
+            // }
+            return (
+              <div
+                id={index}
+                class={`${bgColor} flex flex-col rounded-lg shadow-md p-4`}
+              >
+                <p class="text-gray-500">
+                  {new Date(sale.purchase.order_date).toLocaleString("pt-BR", {
+                    timeZone: "America/Sao_Paulo",
+                  })}
+                </p>
+                <h2 class="text-lg font-semibold">{sale.buyer.name}</h2>
+                <p class="text-gray-500">{sale.buyer.email}</p>
+                <p class="text-gray-500">{sale.product.name}</p>
+                <p class="text-gray-500">{sale.purchase.payment.method}</p>
+                <p class="text-gray-500">
+                  {sale.purchase.payment.installments_number +
+                    "x " +
+                    sale.purchase.price.currency_code +
+                    " " +
+                    sale.purchase.price.value}
+                </p>
+              </div>
+            );
+          })}
+        <button
+          hx-get={`/sales-html?page=${page + 1}`}
+          hx-swap="outerHTML"
+          hx-trigger="revealed"
+        >
+          {" "}
+          Mais Vendas
+        </button>
+      </>
+    );
+  })
+  .get("/leads", ({ set }) => {
+    set.redirect = "/";
+  })
+  .get("/leads-old", () => (
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -245,10 +324,9 @@ const app = new Elysia()
         <main class="flex min-h-screen flex-col items-center">
           <div class="flex flex-col items-center justify-center bg-blue py-2 sm:py-4">
             <div class="flex item-center space-between gap-4">
-            <h1 class="text-2xl font-bold mb-4">Leads</h1>
+              <h1 class="text-2xl font-bold mb-4">Leads</h1>
 
-            <h1 class="text-2xl font-bold mb-4">Sales</h1>
-
+              <h1 class="text-2xl font-bold mb-4">Sales</h1>
             </div>
             <div class="grid grid-cols-1 gap-4 text-gray-700">
               <button
@@ -267,9 +345,43 @@ const app = new Elysia()
   ))
   .get("/", () => (
     <BaseHtml>
-      <h1>Test</h1>
+      <main class="flex min-h-screen max-w-[980px] mx-auto flex-col items-center">
+        <div class="flex flex-col w-full items-center justify-center py-2 sm:py-4">
+          <div class="flex item-center gap-10 space-between">
+            <h1
+              hx-get="/leads-html"
+              hx-target="#display"
+              hx-swap="innerHTML"
+              class="text-2xl font-bold mb-4"
+            >
+              Leads
+            </h1>
+
+            <h1
+              hx-get="/sales-html"
+              hx-target="#display"
+              hx-swap="innerHTML"
+              class="text-2xl font-bold mb-4"
+            >
+              Sales
+            </h1>
+          </div>
+          <div
+            id="display"
+            class="flex flex-col w-full mx-2 gap-4 text-gray-700"
+          >
+            <button hx-get="/leads-html" hx-trigger="load" hx-swap="outerHTML">
+              {" "}
+              Get More Leads
+            </button>
+          </div>
+        </div>
+      </main>
     </BaseHtml>
   ))
+  .post("/compra", (request) => {
+    console.log(JSON.stringify(request));
+  })
   .listen(3000);
 
 console.log(

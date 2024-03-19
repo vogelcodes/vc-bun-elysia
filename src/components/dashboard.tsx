@@ -1,4 +1,4 @@
-import { PropsWithChildren } from "beth-stack/jsx";
+import { PropsWithChildren } from "../dev/jsx";
 
 export function Dashboard({ children }: PropsWithChildren) {
   return (

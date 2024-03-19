@@ -9,7 +9,7 @@ export const BaseHtml = ({ children }: PropsWithChildren) => (
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>THE BETH STACK</title>
+      <title>VogelMKT</title>
       <script src="https://unpkg.com/htmx.org@1.9.5"></script>
       <script>htmx.config.globalViewTransitions = true;</script>
       <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
@@ -26,7 +26,7 @@ export const BaseHtml = ({ children }: PropsWithChildren) => (
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@unocss/reset/tailwind.min.css"
       />
-      <link rel="stylesheet" href="/public/dist/unocss.css" />
+      <script src="https://cdn.jsdelivr.net/npm/@unocss/runtime"></script>
       <script type="text/hyperscript">
         {`
         def copySelectorToClipboard(selector)
@@ -37,7 +37,11 @@ export const BaseHtml = ({ children }: PropsWithChildren) => (
       </script>
       <script>{safeScript}</script>
     </head>
-    <body hx-boost="true" hx-ext="loading-states">
+    <body
+      hx-boost="true"
+      hx-ext="loading-states"
+      class="bg-slate-800 text-zinc-200"
+    >
       {children}
     </body>
   </html>

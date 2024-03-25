@@ -353,11 +353,6 @@ const app = new Elysia()
             //   bgColor = "bg-green-300";
             // }
             let saleDate = new Date(sale.purchase.order_date);
-            console.log(
-              saleDate.toLocaleDateString(),
-              today.toLocaleDateString(),
-              lastSaleDate?.toLocaleDateString()
-            );
             let header;
             if (
               !lastSaleDate &&

@@ -6,7 +6,10 @@ import { ctx } from "./context";
 import { BaseHtml } from "./components/base";
 
 import { staticPlugin } from "@elysiajs/static";
-import { SalesHistoryItem } from "./hotmart";
+import { SalesHistoryItem, salesSum } from "./hotmart";
+import { Dashboard } from "./components/dashboard";
+
+//META
 
 //HOTMART
 
@@ -100,6 +103,7 @@ var leadsSheet = await fetch(
   {}
 );
 let leads: string[][] = await leadsSheet.json();
+
 leads = leads.slice(1).sort((a: string[], b: string[]) => {
   return new Date(b[4]).getTime() - new Date(a[4]).getTime();
 });
@@ -112,10 +116,42 @@ let sortedSales = sales.items.sort(
     return b.purchase.order_date - a.purchase.order_date;
   }
 );
+let sales30D = await salesSum();
 
 let clientsEmail = sales.items.map(
   (client: { buyer: { email: string } }) => client.buyer.email
 );
+
+async function getMetaAds() {
+  let response = await fetch(
+    `https://graph.facebook.com/v17.0/act_182895559595801/insights?access_token=${process.env.META_ADS_TOKEN}&date_preset=last_30d&fields=campaign_name,adset_name,clicks,conversions,ctr,spend,campaign_id&level=adset&limit=120&pretty=0&time_increment=1`
+  );
+  let insights = await response.json();
+  // console.log(insights);
+  let { data } = insights;
+
+  while (insights.paging.next) {
+    response = await fetch(insights.paging.next);
+    insights = await response.json();
+    data = data.concat(insights.data);
+  }
+  const result = data.reduce((accumulator: any, current: any) => {
+    const date = current.date_start;
+    const spend = parseFloat(current.spend);
+
+    // Update the total spend
+    accumulator.total = (accumulator.total || 0) + spend;
+    // Initialize the accumulator for the date if it doesn't exist
+    accumulator[date] = (accumulator[date] || 0) + spend;
+
+    return accumulator;
+  }, {});
+  result["details"] = data;
+
+  return result;
+}
+
+let metaAds30D: { total: any } = await getMetaAds();
 
 const app = new Elysia()
   .use(ctx)
@@ -133,6 +169,15 @@ const app = new Elysia()
         leads = leads.slice(1).sort((a: string[], b: string[]) => {
           return new Date(b[4]).getTime() - new Date(a[4]).getTime();
         });
+      },
+    })
+  )
+  .use(
+    cron({
+      name: "get-ads-90D",
+      pattern: "0 5 * * *",
+      async run() {
+        metaAds30D = await getMetaAds();
       },
     })
   )
@@ -156,6 +201,15 @@ const app = new Elysia()
       },
     })
   )
+  .use(
+    cron({
+      name: "get-sales-30D",
+      pattern: "0 */5 * * * *",
+      async run() {
+        sales30D = await salesSum();
+      },
+    })
+  )
 
   // .get('/leads', async ({params, query})=>{
   //   let leadCount = leads.length;
@@ -170,12 +224,29 @@ const app = new Elysia()
     let leadCount = leads.length;
     let page = query.page ? parseInt(query.page) : 1;
     let pageSize = query.pageSize ? parseInt(query.pageSize) : 10;
-
+    let today = new Date();
+    let lastLeadDate: Date;
     return (
       <>
         {leads
           .slice((page - 1) * pageSize, page * pageSize)
           .map((lead, index) => {
+            let leadDate = new Date(lead[4]);
+            let header;
+            if (
+              !lastLeadDate &&
+              leadDate.toLocaleDateString() === today.toLocaleDateString()
+            ) {
+              header = "<h1 class='text-center text-slate-100'/>Hoje</h1>";
+            } else if (
+              lastLeadDate?.toLocaleDateString() !==
+              leadDate.toLocaleDateString()
+            ) {
+              header = `<h1 class='text-center text-slate-100'/>${leadDate.toLocaleDateString(
+                "en-GB"
+              )}</h1>`;
+            }
+            lastLeadDate = leadDate;
             let bgColor = "bg-white";
             // check if lead[8] is a valid JSON
             let leadLocation = {
@@ -190,12 +261,12 @@ const app = new Elysia()
             }
 
             // console.log(leadLocation);
-            if (clientsEmail.includes(lead[0].trim())) {
+            if (clientsEmail.includes(lead[0].trim().toLowerCase())) {
               bgColor = "bg-green-300";
             }
-            if (lead[1] == "" && lead[0] == "") {
-              return null;
-            }
+            // if (lead[1] == "" && lead[0] == "") {
+            //   return null;
+            // }
             const urlPath = lead[6].split("?")[0];
             const urlParams = new URLSearchParams(lead[6].split("?")[1]);
 
@@ -207,42 +278,51 @@ const app = new Elysia()
             const utmMedium = urlParams.get("utm_medium");
 
             return (
-              <div
-                id={index}
-                class={`${bgColor} flex flex-col rounded-lg shadow-md p-4`}
-              >
-                <p class="text-gray-500">
-                  {new Date(lead[4]).toLocaleString("pt-BR", {
-                    timeZone: "America/Sao_Paulo",
-                  })}{" "}
-                  {leadLocation.city}
-                  {", " +
-                    leadLocation.region_code +
-                    ", " +
-                    leadLocation.country_code}
-                </p>
-                <h2 class="text-lg font-semibold">{lead[2]}</h2>
-                <p class="text-gray-500">{lead[0]}</p>
-                <a href={`https://wa.me/${lead[1].replace("+", "").trim()}`}>
-                  {lead[1]}
-                </a>
-                <p class="text-gray-500"> CTA:{" " + lead[5]}</p>
+              <>
+                {header ? header : null}
+                <div
+                  class={`${bgColor} flex flex-col rounded-lg shadow-md p-4`}
+                >
+                  <p class="text-gray-500">
+                    {new Date(lead[4]).toLocaleString("pt-BR", {
+                      timeZone: "America/Sao_Paulo",
+                    })}{" "}
+                    {leadLocation.city}
+                    {", " +
+                      leadLocation.region_code +
+                      ", " +
+                      leadLocation.country_code}
+                  </p>
+                  <h2 class="text-lg font-semibold">{lead[2]}</h2>
+                  <p class="text-gray-500">{lead[0]}</p>
+                  <a
+                    target="_blank"
+                    href={`https://api.whatsapp.com/send?phone=${lead[1]
+                      .replace("+", "")
+                      .trim()}&text=${encodeURIComponent(
+                      `Oi ${lead[2]}! Tudo bem?❤\n\nAqui é a Carolina Procaci.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nVocê está com alguma dificuldade com a sua amamentação?`
+                    )}`}
+                  >
+                    {lead[1]}
+                  </a>
+                  <p class="text-gray-500"> CTA:{" " + lead[5]}</p>
 
-                <p>
-                  <span class="px-2 py-1 font-bold bg-slate-100">URL:</span>
-                  {urlPath}{" "}
-                  <span class="px-2 py-1 font-bold bg-slate-100">Fonte:</span>{" "}
-                  {utmSource ?? "N/A"}{" "}
-                  <span class="px-2 py-1 font-bold bg-slate-100">Mídia:</span>{" "}
-                  {utmMedium ?? "N/A"}{" "}
-                  <span class="px-2 py-1 font-bold bg-slate-100">
-                    CjAnúncios:
-                  </span>{" "}
-                  {utmAdset ?? "N/A"}{" "}
-                  <span class="px-2 py-1 font-bold bg-slate-100">Ad:</span>
-                  {utmContent ?? "N/A"}
-                </p>
-              </div>
+                  <p>
+                    <span class="px-2 py-1 font-bold bg-slate-100">URL:</span>
+                    {urlPath}{" "}
+                    <span class="px-2 py-1 font-bold bg-slate-100">Fonte:</span>{" "}
+                    {utmSource ?? "N/A"}{" "}
+                    <span class="px-2 py-1 font-bold bg-slate-100">Mídia:</span>{" "}
+                    {utmMedium ?? "N/A"}{" "}
+                    <span class="px-2 py-1 font-bold bg-slate-100">
+                      CjAnúncios:
+                    </span>{" "}
+                    {utmAdset ?? "N/A"}{" "}
+                    <span class="px-2 py-1 font-bold bg-slate-100">Ad:</span>
+                    {utmContent ?? "N/A"}
+                  </p>
+                </div>
+              </>
             );
           })}
         <button
@@ -260,6 +340,8 @@ const app = new Elysia()
     let saleCount = sales.items.length;
     let page = query.page ? parseInt(query.page) : 1;
     let pageSize = query.pageSize ? parseInt(query.pageSize) : 10;
+    console.log(sales.items[4]);
+    console.log(sales.items[5]);
 
     return (
       <>
@@ -271,10 +353,15 @@ const app = new Elysia()
             //   bgColor = "bg-green-300";
             // }
             return (
-              <div
-                id={index}
-                class={`${bgColor} flex flex-col rounded-lg shadow-md p-4`}
-              >
+              <div class={`${bgColor} flex flex-col rounded-lg shadow-md p-4`}>
+                {sale.purchase.recurrency_number ? (
+                  <p>
+                    {"Parcela: " +
+                      sale.purchase.recurrency_number +
+                      "/" +
+                      sale.purchase.payment.installments_number}
+                  </p>
+                ) : null}
                 <p class="text-gray-500">
                   {new Date(sale.purchase.order_date).toLocaleString("pt-BR", {
                     timeZone: "America/Sao_Paulo",
@@ -282,6 +369,7 @@ const app = new Elysia()
                 </p>
                 <h2 class="text-lg font-semibold">{sale.buyer.name}</h2>
                 <p class="text-gray-500">{sale.buyer.email}</p>
+                <p class="text-gray-500">{sale.purchase.transaction}</p>
                 <p class="text-gray-500">{sale.product.name}</p>
                 <p class="text-gray-500">{sale.purchase.payment.method}</p>
                 <p class="text-gray-500">
@@ -305,6 +393,38 @@ const app = new Elysia()
       </>
     );
   })
+  .get("/resumo", async ({ query }) => {
+    if (metaAds30D == undefined) {
+      metaAds30D = await getMetaAds();
+    }
+    let page = query.page ? parseInt(query.page) : 1;
+    let pageSize = query.pageSize ? parseInt(query.pageSize) : 10;
+    return (
+      <div>
+        <div class="flex justify-between w-[300px]">
+          <div>Gastos com anúncios:</div>{" "}
+          <div>R${" " + Number(metaAds30D.total).toLocaleString("pt-BR")}</div>
+        </div>
+        <div class="flex justify-between w-[300px]">
+          <div>Receitas Hotmart:</div>
+          <div>R${" " + Number(sales30D.total).toLocaleString("pt-BR")}</div>
+        </div>
+        <hr />
+        <div class="flex justify-between w-[300px]">
+          <div>Saldo: </div>
+
+          <div>
+            R$
+            {" " +
+              (
+                Number(sales30D.total) - Number(metaAds30D.total)
+              ).toLocaleString("pt-BR")}
+          </div>
+        </div>
+      </div>
+    );
+  })
+
   .get("/leads", ({ set }) => {
     set.redirect = "/";
   })
@@ -343,7 +463,7 @@ const app = new Elysia()
       </body>
     </html>
   ))
-  .get("/", () => (
+  .get("/tabs-old", () => (
     <BaseHtml>
       <main class="flex min-h-screen max-w-[980px] mx-auto flex-col items-center">
         <div class="flex flex-col w-full items-center justify-center py-2 sm:py-4">
@@ -352,7 +472,7 @@ const app = new Elysia()
               hx-get="/leads-html"
               hx-target="#display"
               hx-swap="innerHTML"
-              class="text-2xl font-bold mb-4"
+              class="text-2xl font-bold mb-4 text-green-200 cursor-pointer"
             >
               Leads
             </h1>
@@ -361,7 +481,7 @@ const app = new Elysia()
               hx-get="/sales-html"
               hx-target="#display"
               hx-swap="innerHTML"
-              class="text-2xl font-bold mb-4"
+              class="text-2xl font-bold mb-4 text-green-200 cursor-pointer"
             >
               Sales
             </h1>
@@ -375,6 +495,58 @@ const app = new Elysia()
               Get More Leads
             </button>
           </div>
+        </div>
+      </main>
+    </BaseHtml>
+  ))
+  .get("/", () => (
+    <BaseHtml>
+      <main class="flex min-h-screen max-w-[980px] mx-auto flex-col items-center">
+        <div class="flex flex-col w-full items-center justify-center">
+          <div>Últimos 30 dias:</div>
+          <div hx-get="/resumo" hx-trigger="load"></div>
+
+          <div
+            class={"sticky top-0 w-full bg-slate-800"}
+            id="tabs"
+            hx-get="/leads-html"
+            hx-trigger="load"
+            hx-target="#tab-contents"
+            hx-swap="innerHTML"
+          >
+            <div
+              class="tab-list flex gap-8 items-center justify-around"
+              role="tablist"
+            >
+              <a
+                id="leads-tab"
+                hx-get="/leads-html"
+                hx-on:click="htmx.takeClass('#leads-tab', 'text-green-200')"
+                class="selected text-green-200"
+                role="tab"
+                aria-selected="false"
+                aria-controls="tab-content"
+              >
+                <h1 class="text-2xl font-bold mb-4 cursor-pointer">Leads</h1>
+              </a>
+
+              <a
+                id="sales-tab"
+                hx-get="/sales-html"
+                hx-on:click="htmx.takeClass('#sales-tab', 'text-green-200')"
+                role="tab"
+                aria-selected="false"
+                aria-controls="tab-content"
+              >
+                <h1 class="text-2xl font-bold mb-4 cursor-pointer">Sales</h1>
+              </a>
+            </div>
+          </div>
+          <div
+            id="tab-contents"
+            role="tabpanel"
+            class="tab-content flex flex-col w-full mx-2 gap-4 text-gray-700"
+          ></div>
         </div>
       </main>
     </BaseHtml>

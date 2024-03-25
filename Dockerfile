@@ -13,6 +13,7 @@ COPY tsconfig.json .
 # COPY public public
 
 ENV NODE_ENV production
+ENV TZ America/Sao_Paulo
 CMD ["bun", "src/index.tsx"]
 
 EXPOSE 3000

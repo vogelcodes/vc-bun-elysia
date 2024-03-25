@@ -401,22 +401,31 @@ const app = new Elysia()
       <div>
         <div class="flex justify-between w-[300px]">
           <div>Gastos com anúncios:</div>{" "}
-          <div>R${" " + Number(metaAds30D.total).toLocaleString("pt-BR")}</div>
+          <div>
+            {Number(metaAds30D.total).toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+          </div>
         </div>
         <div class="flex justify-between w-[300px]">
           <div>Receitas Hotmart:</div>
-          <div>R${" " + Number(sales30D.total).toLocaleString("pt-BR")}</div>
+          <div>
+            {Number(sales30D.total).toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+          </div>
         </div>
         <hr />
         <div class="flex justify-between w-[300px]">
           <div>Saldo: </div>
 
           <div>
-            R$
-            {" " +
-              (
-                Number(sales30D.total) - Number(metaAds30D.total)
-              ).toLocaleString("pt-BR")}
+            {(Number(sales30D.total) - Number(metaAds30D.total)).toLocaleString(
+              "pt-BR",
+              { style: "currency", currency: "BRL" }
+            )}
           </div>
         </div>
       </div>

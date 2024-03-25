@@ -340,8 +340,6 @@ const app = new Elysia()
     let saleCount = sales.items.length;
     let page = query.page ? parseInt(query.page) : 1;
     let pageSize = query.pageSize ? parseInt(query.pageSize) : 10;
-    console.log(sales.items[4]);
-    console.log(sales.items[5]);
 
     return (
       <>

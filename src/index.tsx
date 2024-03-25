@@ -383,12 +383,15 @@ const app = new Elysia()
                   class={`${bgColor} flex flex-col rounded-lg shadow-md p-4`}
                 >
                   {sale.purchase.recurrency_number ? (
-                    <p>
-                      {"Parcela: " +
-                        sale.purchase.recurrency_number +
-                        "/" +
-                        sale.purchase.payment.installments_number}
-                    </p>
+                    <>
+                      <p>
+                        {"Parcela: " +
+                          sale.purchase.recurrency_number +
+                          "/" +
+                          sale.purchase.payment.installments_number}
+                      </p>
+                      <hr />
+                    </>
                   ) : null}
                   <p class="text-gray-500">
                     {new Date(sale.purchase.order_date).toLocaleString(

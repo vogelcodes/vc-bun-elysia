@@ -340,6 +340,8 @@ const app = new Elysia()
     let saleCount = sales.items.length;
     let page = query.page ? parseInt(query.page) : 1;
     let pageSize = query.pageSize ? parseInt(query.pageSize) : 10;
+    let today = new Date();
+    let lastSaleDate: Date;
 
     return (
       <>
@@ -350,34 +352,66 @@ const app = new Elysia()
             // if (clientsEmail.includes(sale.buyer.email.trim())) {
             //   bgColor = "bg-green-300";
             // }
+            let saleDate = new Date(sale.purchase.order_date);
+            console.log(
+              saleDate.toLocaleDateString(),
+              today.toLocaleDateString(),
+              lastSaleDate?.toLocaleDateString()
+            );
+            let header;
+            if (
+              !lastSaleDate &&
+              saleDate.toLocaleDateString() === today.toLocaleDateString()
+            ) {
+              header = "<h1 class='text-center text-slate-100'/>Hoje</h1>";
+            } else if (
+              !lastSaleDate ||
+              lastSaleDate?.toLocaleDateString() !==
+                saleDate.toLocaleDateString()
+            ) {
+              header = `<h1 class='text-center text-slate-100'/>${saleDate.toLocaleDateString(
+                "en-GB"
+              )}</h1>`;
+            }
+            lastSaleDate = saleDate;
+
             return (
-              <div class={`${bgColor} flex flex-col rounded-lg shadow-md p-4`}>
-                {sale.purchase.recurrency_number ? (
-                  <p>
-                    {"Parcela: " +
-                      sale.purchase.recurrency_number +
-                      "/" +
-                      sale.purchase.payment.installments_number}
+              <>
+                {header ? header : null}
+
+                <div
+                  class={`${bgColor} flex flex-col rounded-lg shadow-md p-4`}
+                >
+                  {sale.purchase.recurrency_number ? (
+                    <p>
+                      {"Parcela: " +
+                        sale.purchase.recurrency_number +
+                        "/" +
+                        sale.purchase.payment.installments_number}
+                    </p>
+                  ) : null}
+                  <p class="text-gray-500">
+                    {new Date(sale.purchase.order_date).toLocaleString(
+                      "pt-BR",
+                      {
+                        timeZone: "America/Sao_Paulo",
+                      }
+                    )}
                   </p>
-                ) : null}
-                <p class="text-gray-500">
-                  {new Date(sale.purchase.order_date).toLocaleString("pt-BR", {
-                    timeZone: "America/Sao_Paulo",
-                  })}
-                </p>
-                <h2 class="text-lg font-semibold">{sale.buyer.name}</h2>
-                <p class="text-gray-500">{sale.buyer.email}</p>
-                <p class="text-gray-500">{sale.purchase.transaction}</p>
-                <p class="text-gray-500">{sale.product.name}</p>
-                <p class="text-gray-500">{sale.purchase.payment.method}</p>
-                <p class="text-gray-500">
-                  {sale.purchase.payment.installments_number +
-                    "x " +
-                    sale.purchase.price.currency_code +
-                    " " +
-                    sale.purchase.price.value}
-                </p>
-              </div>
+                  <h2 class="text-lg font-semibold">{sale.buyer.name}</h2>
+                  <p class="text-gray-500">{sale.buyer.email}</p>
+                  <p class="text-gray-500">{sale.purchase.transaction}</p>
+                  <p class="text-gray-500">{sale.product.name}</p>
+                  <p class="text-gray-500">{sale.purchase.payment.method}</p>
+                  <p class="text-gray-500">
+                    {sale.purchase.payment.installments_number +
+                      "x " +
+                      sale.purchase.price.currency_code +
+                      " " +
+                      sale.purchase.price.value}
+                  </p>
+                </div>
+              </>
             );
           })}
         <button

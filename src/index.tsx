@@ -6,7 +6,7 @@ import { ctx } from "./context";
 import { BaseHtml } from "./components/base";
 
 import { staticPlugin } from "@elysiajs/static";
-import { SalesHistoryItem, salesSum } from "./hotmart";
+import { Item, SalesHistoryItem, salesSum } from "./hotmart";
 import { Dashboard } from "./components/dashboard";
 
 //META
@@ -196,7 +196,7 @@ const app = new Elysia()
           }
         );
         clientsEmail = sales.items.map(
-          (client: { buyer: { email: string } }) => client.buyer.email
+          (client: { buyer: { email: string }}) => client.buyer.email
         );
       },
     })
@@ -248,6 +248,26 @@ const app = new Elysia()
             }
             lastLeadDate = leadDate;
             let bgColor = "bg-white";
+            let viewSaleElement = null;
+            const ViewSale = function ({sale}: {sale: Item | undefined}){
+              if (sale) {
+
+              return(<div class={"flex bg-green-900  p-2 rounded-md items-center gap-4"}><span style="font-size: 3em; color: #5ce492;"><i class=" fa-solid fa-file-invoice-dollar"></i></span>               
+              <p class="text-zinc-50">
+                {sale.purchase.payment.installments_number +
+                  "x " +
+                  sale.purchase.price.currency_code +
+                  " " +
+                  sale.purchase.price.value +
+                  " " +
+                  sale.purchase.status+" "+sale.purchase.payment.method+" "+ sale.purchase.transaction }              </p>
+                  
+        
+</div>)
+        } else {
+          return null;
+        }
+            };
             // check if lead[8] is a valid JSON
             let leadLocation = {
               city: "N/A",
@@ -262,7 +282,13 @@ const app = new Elysia()
 
             // console.log(leadLocation);
             if (clientsEmail.includes(lead[0].trim().toLowerCase())) {
+              //get sale info from sales using email
+              let sale = sales.items.find(
+                (sale) => sale.buyer.email === lead[0].trim().toLowerCase()
+              );
               bgColor = "bg-green-300";
+              viewSaleElement = <ViewSale sale={sale} />;
+
             }
             // if (lead[1] == "" && lead[0] == "") {
             //   return null;
@@ -284,7 +310,8 @@ const app = new Elysia()
                 <div
                   class={`${bgColor} flex flex-col rounded-lg shadow-md p-4`}
                 >
-                  <p class="text-gray-500">
+                  <div>
+                    <p class="text-gray-500">
                     {new Date(lead[4]).toLocaleString("pt-BR", {
                       timeZone: "America/Sao_Paulo",
                     })}{" "}
@@ -294,21 +321,23 @@ const app = new Elysia()
                       ", " +
                       leadLocation.country_code}
                   </p>
+                    </div>
                   <h2 class="text-lg font-semibold">{lead[2]}</h2>
                   <p class="text-gray-500">{lead[0]}</p>
                   <a
                     target="_blank"
                     href={`https://api.whatsapp.com/send?phone=${lead[1]
-                      .replace("+", "")
-                      .trim()}&text=${encodeURIComponent(
+                    .replace("+", "")
+                    .trim()}&text=${encodeURIComponent(
                       `Oi ${lead[2]}! Tudo bem?❤\n\nAqui é a Carolina Procaci.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nVocê está com alguma dificuldade com a sua amamentação?`
-                    )}`}
-                  >
+                      )}`}
+                      >
                     {lead[1]}
                   </a>
                   <p class="text-gray-500"> CTA:{" " + lead[5]}</p>
+                    {viewSaleElement}
 
-                  <p>
+                  <p class={"mt-4"}>
                     <span class="px-2 py-1 font-bold bg-slate-100">URL:</span>
                     {urlPath}{" "}
                     <span class="px-2 py-1 font-bold bg-slate-100">Fonte:</span>{" "}

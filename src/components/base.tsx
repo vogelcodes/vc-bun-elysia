@@ -15,6 +15,7 @@ export const BaseHtml = ({ children }: PropsWithChildren) => (
       <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
       <script src="https://unpkg.com/htmx.org/dist/ext/loading-states.js"></script>
       <script src="https://unpkg.com/hyperscript.org@0.9.11"></script>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" />
       <style>
         {`
           [data-loading] {

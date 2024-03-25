@@ -276,6 +276,7 @@ const app = new Elysia()
             const utmContent = urlParams.get("utm_content");
             const utmAdset = urlParams.get("utm_adset");
             const utmMedium = urlParams.get("utm_medium");
+            const fbclid = urlParams.get("fbclid");
 
             return (
               <>
@@ -320,6 +321,10 @@ const app = new Elysia()
                     {utmAdset ?? "N/A"}{" "}
                     <span class="px-2 py-1 font-bold bg-slate-100">Ad:</span>
                     {utmContent ?? "N/A"}
+                    <span class="px-2 py-1 font-bold bg-slate-100 text-ellipsis w-8">
+                      Fbclid:
+                    </span>
+                    {fbclid ? "Sim" : "N/A"}
                   </p>
                 </div>
               </>

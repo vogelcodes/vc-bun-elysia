@@ -190,7 +190,7 @@ export async function salesSum() {
     };
   }
   const data = await getData();
-  console.log(data.total);
+  // console.log(data.total);
 
   return data;
 }

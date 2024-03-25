@@ -35,56 +35,56 @@ export const ctx = new Elysia({
     const now = performance.now();
     // const authRequest = ctx.auth.handleRequest(ctx);
     // const session = await authRequest.validate();
-    console.log("auth time", performance.now() - now, "ms");
+    // console.log("auth time", performance.now() - now, "ms");
 
     // return { session };
-  })
-  // .use(bethStack())
-  // .use(logger(loggerConfig))
-  // .use(
-  //   // @ts-expect-error
-  //   config.env.NODE_ENV === "development"
-  //     ? new HoltLogger().getLogger()
-  //     : (a) => a,
-  // )
-  // .use(
-  //   // @ts-expect-error
-  //   config.env.DATABASE_CONNECTION_TYPE === "local-replica"
-  //     ? cron({
-  //         name: "heartbeat",
-  //         pattern: "*/2 * * * * *",
-  //         run() {
-  //           const now = performance.now();
-  //           // console.log("Syncing database...");
-  //           void client.sync().then(() => {
-  //             // console.log(`Database synced in ${performance.now() - now}ms`);
-  //           });
-  //         },
-  //       })
-  //     : (a) => a,
-  // )
-  // .onStart(({ log }) => {
-  //   if (log && config.env.NODE_ENV === "production") {
-  //     log.info("Server started");
-  //   }
-  // })
-  // .onStop(({ log }) => {
-  //   if (log && config.env.NODE_ENV === "production") {
-  //     log.info("Server stopped");
-  //   }
-  // })
-  // .onRequest(({ log, request }) => {
-  //   if (log && config.env.NODE_ENV === "production") {
-  //     log.debug(`Request received: ${request.method}: ${request.url}`);
-  //   }
-  // })
-  // .onResponse(({ log, request, set }) => {
-  //   if (log && config.env.NODE_ENV === "production") {
-  //     log.debug(`Response sent: ${request.method}: ${request.url}`);
-  //   }
-  // })
-  // .onError(({ log, error }) => {
-  //   if (log && config.env.NODE_ENV === "production") {
-  //     log.error(error);
-  //   }
-  // });
+  });
+// .use(bethStack())
+// .use(logger(loggerConfig))
+// .use(
+//   // @ts-expect-error
+//   config.env.NODE_ENV === "development"
+//     ? new HoltLogger().getLogger()
+//     : (a) => a,
+// )
+// .use(
+//   // @ts-expect-error
+//   config.env.DATABASE_CONNECTION_TYPE === "local-replica"
+//     ? cron({
+//         name: "heartbeat",
+//         pattern: "*/2 * * * * *",
+//         run() {
+//           const now = performance.now();
+//           // console.log("Syncing database...");
+//           void client.sync().then(() => {
+//             // console.log(`Database synced in ${performance.now() - now}ms`);
+//           });
+//         },
+//       })
+//     : (a) => a,
+// )
+// .onStart(({ log }) => {
+//   if (log && config.env.NODE_ENV === "production") {
+//     log.info("Server started");
+//   }
+// })
+// .onStop(({ log }) => {
+//   if (log && config.env.NODE_ENV === "production") {
+//     log.info("Server stopped");
+//   }
+// })
+// .onRequest(({ log, request }) => {
+//   if (log && config.env.NODE_ENV === "production") {
+//     log.debug(`Request received: ${request.method}: ${request.url}`);
+//   }
+// })
+// .onResponse(({ log, request, set }) => {
+//   if (log && config.env.NODE_ENV === "production") {
+//     log.debug(`Response sent: ${request.method}: ${request.url}`);
+//   }
+// })
+// .onError(({ log, error }) => {
+//   if (log && config.env.NODE_ENV === "production") {
+//     log.error(error);
+//   }
+// });

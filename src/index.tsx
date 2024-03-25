@@ -429,6 +429,15 @@ const app = new Elysia()
     }
     let page = query.page ? parseInt(query.page) : 1;
     let pageSize = query.pageSize ? parseInt(query.pageSize) : 10;
+    let usdValues: number = 0;
+    usdValues =
+      sales30D.responseCarol.items[1].total_value.value +
+      sales30D.responseDaniel.items[1].total_value.value;
+
+    let usdToBrl = await fetch(
+      "https://economia.awesomeapi.com.br/last/USD-BRL"
+    ).then((res) => res.json());
+    let totalBrl = usdValues * usdToBrl.USDBRL.bid + sales30D.total;
     return (
       <div>
         <div class="flex justify-between w-[300px]">
@@ -441,9 +450,9 @@ const app = new Elysia()
           </div>
         </div>
         <div class="flex justify-between w-[300px]">
-          <div>Receitas Hotmart:</div>
+          <div>Receitas Hotmart(BRL+USD):</div>
           <div>
-            {Number(sales30D.total).toLocaleString("pt-BR", {
+            {totalBrl.toLocaleString("pt-BR", {
               style: "currency",
               currency: "BRL",
             })}
@@ -454,10 +463,10 @@ const app = new Elysia()
           <div>Saldo: </div>
 
           <div>
-            {(Number(sales30D.total) - Number(metaAds30D.total)).toLocaleString(
-              "pt-BR",
-              { style: "currency", currency: "BRL" }
-            )}
+            {(totalBrl - Number(metaAds30D.total)).toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
           </div>
         </div>
       </div>

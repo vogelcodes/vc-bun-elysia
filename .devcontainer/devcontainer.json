@@ -1,0 +1,3 @@
+{
+  "postStartCommand": "source /home/codespace/.bashrc"
+}
